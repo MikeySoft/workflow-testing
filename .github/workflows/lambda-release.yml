@@ -20,17 +20,8 @@ jobs:
             runner: ubuntu-latest
           - arch: arm64
             python: 3.13
-            runner: ARM64
+            runner: ubuntu-latest-arm64
     steps:
-      - name: Set runner type
-        run: |
-          if [ "${{ matrix.arch }}" = "arm64" ]; then
-            echo "::set-output name=runner::ARM64"
-          else
-            echo "::set-output name=runner::ubuntu-latest"
-          fi
-        id: setrunner
-
       - name: Checkout code
         uses: actions/checkout@v4
 
