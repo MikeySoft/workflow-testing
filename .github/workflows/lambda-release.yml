@@ -14,8 +14,13 @@ jobs:
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        arch: [x86_64, arm64]
-        python: [3.13]
+        include:
+          - arch: x86_64
+            python: 3.13
+            runner: ubuntu-latest
+          - arch: arm64
+            python: 3.13
+            runner: ARM64
     steps:
       - name: Set runner type
         run: |
