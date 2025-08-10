@@ -24,7 +24,7 @@ jobs:
           pip install -r app/requirements.txt
           pip install pytest pytest-cov
       - name: Run tests with coverage
-        run: PYTHONPATH=$(pwd)/app python -m pytest --cov=app --cov-report=xml tests/
+        run: PYTHONPATH=$(pwd)/app python -m pytest --cov=app --cov-report=xml --cov-report=term-missing tests/
 
   sonarqube:
     runs-on: ubuntu-latest
@@ -42,11 +42,18 @@ jobs:
           pip install -r app/requirements.txt
       - name: Create SonarCloud project if not exists
         run: |
+          set -e
+          sudo apt-get update && sudo apt-get install -y jq
           PROJECT_KEY=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '/' '_')
+          echo "PROJECT_KEY=$PROJECT_KEY" >> $GITHUB_ENV
           PROJECT_NAME="$PROJECT_KEY"
           PROJECT_EXISTS="$(curl -s \
             --header "Authorization: Bearer $SONAR_TOKEN" \
             -X GET "${{ vars.SONAR_HOST_URL }}/api/projects/search?organization=${{ vars.SONAR_ORG }}&projects=$PROJECT_KEY" | jq '.components | length')"
+          if ! [[ "$PROJECT_EXISTS" =~ ^[0-9]+$ ]]; then
+            echo "Error: Could not determine if SonarCloud project exists. API or jq failed."
+            exit 1
+          fi
           if [ "$PROJECT_EXISTS" -eq "0" ]; then
             echo "Creating SonarCloud project..."
             PROJECT_CREATE="$(curl -s \
@@ -77,3 +84,5 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_PROJECT_KEY: ${{ env.PROJECT_KEY }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORG }}
