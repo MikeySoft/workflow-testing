@@ -42,7 +42,7 @@ jobs:
           pip install -r app/requirements.txt
           pip install pytest pytest-cov
       - name: Run tests with coverage
-        run: PYTHONPATH=$(pwd)/app python -m pytest --cov=app --cov-report=xml --cov-report=term-missing tests/ && ls -la
+        run: PYTHONPATH=$(pwd)/app python -m pytest --cov=app --cov-report=xml --cov-report=term-missing tests/
       - name: Create SonarCloud project if not exists
         run: |
           set -e
