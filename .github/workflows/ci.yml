@@ -40,6 +40,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r app/requirements.txt
+          ls -la
       - name: Create SonarCloud project if not exists
         run: |
           set -e
