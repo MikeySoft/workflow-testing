@@ -48,14 +48,14 @@ jobs:
           if [ -f "$VERSION_FILE" ]; then
             VERSION=$(cat $VERSION_FILE)
           else
-            VERSION="1.0.0"
+            VERSION="0.0.0"
           fi
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
           PATCH=$((PATCH+1))
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo "$NEW_VERSION" > $VERSION_FILE
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
+          echo "New version: $NEW_VERSION"
       - name: Create base64 hash of zip
         run: |
           base64 lambda_build.zip > lambda_build.zip.b64
