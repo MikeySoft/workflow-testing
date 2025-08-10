@@ -47,6 +47,7 @@ jobs:
           PROJECT_KEY=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '/' '_')
           echo "PROJECT_KEY=$PROJECT_KEY" >> $GITHUB_ENV
           PROJECT_NAME="$PROJECT_KEY"
+          echo ORG ${{ vars.SONAR_ORG }}
           PROJECT_EXISTS="$(curl -s \
             --header "Authorization: Bearer $SONAR_TOKEN" \
             -X GET "${{ vars.SONAR_HOST_URL }}/api/projects/search?organization=${{ vars.SONAR_ORG }}&projects=$PROJECT_KEY" | jq '.components | length')"
