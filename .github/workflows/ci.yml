@@ -47,9 +47,8 @@ jobs:
           PROJECT_KEY=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]' | tr '/' '_')
           echo "PROJECT_KEY=$PROJECT_KEY" >> $GITHUB_ENV
           PROJECT_NAME="$PROJECT_KEY"
-          echo ORG ${{ vars.SONAR_ORG }}
           PROJECT_EXISTS="$(curl -s \
-            --header "Authorization: Bearer $SONAR_TOKEN" \
+            --header "Authorization: Bearer ${{ secrets.SONAR_TOKEN}}" \
             -X GET "${{ vars.SONAR_HOST_URL }}/api/projects/search?organization=${{ vars.SONAR_ORG }}&projects=$PROJECT_KEY" | jq '.components | length')"
           if ! [[ "$PROJECT_EXISTS" =~ ^[0-9]+$ ]]; then
             echo "Error: Could not determine if SonarCloud project exists. API or jq failed."
@@ -59,7 +58,7 @@ jobs:
             echo "Creating SonarCloud project..."
             PROJECT_CREATE="$(curl -s \
               -X POST "${{ vars.SONAR_HOST_URL }}/api/projects/create" \
-              --header "Authorization: Bearer $SONAR_TOKEN" \
+              --header "Authorization: Bearer ${{ secrets.SONAR_TOKEN}}" \
               -d "organization=${{ vars.SONAR_ORG }}" \
               -d "name=$PROJECT_NAME" \
               -d "project=$PROJECT_KEY" \
@@ -69,7 +68,7 @@ jobs:
               echo "SonarCloud project created successfully."
               echo "Response: ${PROJECT_CREATE}"
               echo "Setting SonarQube Default branch to main"
-              curl -s -X POST --header "Authorization: Bearer $SONAR_TOKEN" "${SONAR_HOST_URL}/api/project_branches/rename" \
+              curl -s -X POST --header "Authorization: Bearer ${{ secrets.SONAR_TOKEN}}" "${{ vars.SONAR_HOST_URL }}/api/project_branches/rename" \
                 -d "organization=${{ vars.SONAR_ORG }}&name=main&project=${PROJECT_KEY}"
             else
               echo "Failed to create SonarCloud project: $PROJECT_CREATE"
