@@ -85,6 +85,7 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ env.PROJECT_KEY }}
             -Dsonar.organization=${{ vars.SONAR_ORG }}
+            -Dsonar.python.coverage.reportPaths=coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
