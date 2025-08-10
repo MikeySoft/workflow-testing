@@ -60,33 +60,12 @@ jobs:
         run: |
           base64 lambda_build.zip > lambda_build.zip.b64
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub Release and Upload Artifacts
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          release_name: Lambda Release v${{ steps.version.outputs.version }}
-          draft: false
-          prerelease: false
-
-      - name: Upload lambda_build.zip to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: lambda_build.zip
-          asset_name: lambda_build.zip
-          asset_content_type: application/zip
-
-      - name: Upload lambda_build.zip.b64 to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: lambda_build.zip.b64
-          asset_name: lambda_build.zip.b64
-          asset_content_type: text/plain
+          tag: v${{ steps.version.outputs.version }}
+          name: Lambda Release v${{ steps.version.outputs.version }}
+          artifacts: |
+            lambda_build.zip
+            lambda_build.zip.b64
+          token: ${{ secrets.GITHUB_TOKEN }}
