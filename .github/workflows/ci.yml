@@ -31,14 +31,17 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          echo -e "[run]\nrelative_files = True\n" > .coveragerc
-          pytest \
-            --cov=app \
-            --cov-config=.coveragerc \
-            --cov-report=xml:coverage.xml \
-            tests/
-          # sed -i -E 's/<source>.*<\/source>/<source>.<\/source>/g' coverage.xml
-          sed -i -E 's/filename="([^"/]+\.py)"/filename="app\/\1"/g' coverage.xml
+          python -m coverage run -m pytest -rap --junitxml coverage.xml
+          python -m coverage xml -i
+
+          # echo -e "[run]\nrelative_files = True\n" > .coveragerc
+          # pytest \
+          #   --cov=app \
+          #   --cov-config=.coveragerc \
+          #   --cov-report=xml:coverage.xml \
+          #   tests/
+          # # sed -i -E 's/<source>.*<\/source>/<source>.<\/source>/g' coverage.xml
+          # sed -i -E 's/filename="([^"/]+\.py)"/filename="app\/\1"/g' coverage.xml
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -95,12 +98,12 @@ jobs:
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v2
         with:
-          projectBaseDir: .
           args: >
             -Dsonar.projectKey=${{ env.PROJECT_KEY }}
             -Dsonar.organization=${{ vars.SONAR_ORG }}
             -Dsonar.branch.name=${{ github.ref_name }}
-            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.python.coverage.reportPaths=./coverage.xml
+            -Dsonar.sources=app
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
