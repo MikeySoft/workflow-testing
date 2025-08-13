@@ -80,7 +80,10 @@ jobs:
             fi
           else
             echo "SonarCloud project already exists."
+            echo "1. Current directory contents:"
+            ls -la
           fi
+          echo "2. Current directory contents:"
           ls -la
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v2
