@@ -31,12 +31,14 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          # Ensure the app directory is on PYTHONPATH so imports work
+          echo -e "[run]\nrelative_files = True\n" > .coveragerc
           pytest \
             --cov=app \
+            --cov-config=.coveragerc \
             --cov-report=xml:coverage.xml \
             tests/
-          sed -i -E 's/<source>.*<\/source>/<source>.<\/source>/g' coverage.xml
+          # sed -i -E 's/<source>.*<\/source>/<source>.<\/source>/g' coverage.xml
+          sed -i -E 's/filename="([^"/]+\.py)"/filename="app\/\1"/g' coverage.xml
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
