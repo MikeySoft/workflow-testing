@@ -28,12 +28,10 @@ jobs:
           pip install pytest pytest-cov coverage
 
       - name: Run tests with coverage
+        env:
+          PYTHONPATH: ${{ github.workspace }}/app
         run: |
-          # Run tests and generate raw coverage data
-          PYTHONPATH=$(pwd)/app \
           pytest --cov=app --cov-report=term-missing tests/
-
-          # Convert to XML with relative paths so Sonar can match files
           coverage xml -o coverage.xml --relative-files
 
       - name: Upload coverage report
