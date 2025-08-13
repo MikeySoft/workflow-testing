@@ -29,7 +29,7 @@ jobs:
 
       - name: Run tests and generate coverage
         env:
-          PYTHONPATH: $(pwd)
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           # Ensure the app directory is on PYTHONPATH so imports work
           pytest \
