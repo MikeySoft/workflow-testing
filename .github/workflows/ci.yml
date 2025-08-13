@@ -29,7 +29,7 @@ jobs:
 
       - name: Run tests with coverage
         env:
-          PYTHONPATH: ${{ github.workspace }}/app
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           pwd
           ls -la
