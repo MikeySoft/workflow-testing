@@ -25,19 +25,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r app/requirements.txt
-          pip install pytest pytest-cov coverage
+          pip install pytest pytest-cov
 
       - name: Run tests and generate coverage
         run: |
           # Ensure the app directory is on PYTHONPATH so imports work
-          export PYTHONPATH=$(pwd)
-          pytest \
+          PYTHONPATH=$(pwd) pytest \
             --cov=app \
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml \
             tests/
-          PYTHONPATH=$(pwd) coverage run --source=app -m pytest tests/
-          coverage xml -o coverage.xml
+          sed -iE 's/<source>.*<\/source>/<source>.<\/source>/g' coverage.xml
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
