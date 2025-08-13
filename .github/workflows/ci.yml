@@ -30,7 +30,7 @@ jobs:
       - name: Run tests and generate coverage
         run: |
           # Ensure the app directory is on PYTHONPATH so imports work
-          export PYTHONPATH=$(pwd)/app
+          export PYTHONPATH=$(pwd)
           pytest \
             --cov=app \
             --cov-report=term-missing \
