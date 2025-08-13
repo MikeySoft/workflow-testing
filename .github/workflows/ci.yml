@@ -31,6 +31,9 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/app
         run: |
+          pwd
+          ls -la
+          ls -la app/ || true
           pytest --cov=app --cov-report=term-missing tests/
           coverage xml -o coverage.xml --relative-files
 
