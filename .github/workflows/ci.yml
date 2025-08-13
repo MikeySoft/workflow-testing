@@ -25,7 +25,17 @@ jobs:
           pip install -r app/requirements.txt
           pip install pytest pytest-cov
       - name: Run tests with coverage
-        run: PYTHONPATH=$(pwd)/app python -m pytest --cov=app --cov-report=xml --cov-report=term-missing tests/
+        run: |
+          PYTHONPATH=$(pwd)/app python -m pytest \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            tests/
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
 
   scan:
     runs-on: ubuntu-latest
@@ -33,17 +43,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
         with:
-          python-version: "3.11"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r app/requirements.txt
-          pip install pytest pytest-cov
-      - name: Run tests with coverage
-        run: PYTHONPATH=$(pwd)/app python -m pytest --cov=app --cov-report=xml --cov-report=term-missing tests/
+          name: coverage-report
+          path: .
+
       - name: Create SonarCloud project if not exists
         run: |
           set -e
@@ -55,7 +61,7 @@ jobs:
             --header "Authorization: Bearer ${{ secrets.SONAR_TOKEN}}" \
             -X GET "${{ vars.SONAR_HOST_URL }}/api/projects/search?organization=${{ vars.SONAR_ORG }}&projects=$PROJECT_KEY" | jq '.components | length')"
           if ! [[ "$PROJECT_EXISTS" =~ ^[0-9]+$ ]]; then
-            echo "Error: Could not determine if SonarCloud project exists. API or jq failed."
+            echo "Error: Could not determine if SonarCloud project exists."
             exit 1
           fi
           if [ "$PROJECT_EXISTS" -eq "0" ]; then
@@ -68,23 +74,15 @@ jobs:
               -d "project=$PROJECT_KEY" \
               -d "visibility=private" \
               -d "newCodeDefinitionType=days&newCodeDefinitionValue=7")"
-            if jq -r '.project' /dev/null 2>&1 <<<"${PROJECT_CREATE}"; then
-              echo "SonarCloud project created successfully."
-              echo "Response: ${PROJECT_CREATE}"
-              echo "Setting SonarQube Default branch to main"
-              curl -s -X POST --header "Authorization: Bearer ${{ secrets.SONAR_TOKEN}}" "${{ vars.SONAR_HOST_URL }}/api/project_branches/rename" \
-                -d "organization=${{ vars.SONAR_ORG }}&name=main&project=${PROJECT_KEY}"
-            else
-              echo "Failed to create SonarCloud project: $PROJECT_CREATE"
-              exit 1
-            fi
+            echo "SonarCloud project created: $PROJECT_CREATE"
+            curl -s -X POST \
+              --header "Authorization: Bearer ${{ secrets.SONAR_TOKEN}}" \
+              "${{ vars.SONAR_HOST_URL }}/api/project_branches/rename" \
+              -d "organization=${{ vars.SONAR_ORG }}&name=main&project=${PROJECT_KEY}"
           else
             echo "SonarCloud project already exists."
-            echo "1. Current directory contents:"
-            ls -la
           fi
-          echo "2. Current directory contents:"
-          ls -la
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v2
         with:
@@ -92,6 +90,7 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ env.PROJECT_KEY }}
             -Dsonar.organization=${{ vars.SONAR_ORG }}
+            -Dsonar.branch.name=${{ github.ref_name }}
             -Dsonar.python.coverage.reportPaths=coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
